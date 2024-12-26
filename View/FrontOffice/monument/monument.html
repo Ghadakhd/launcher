@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tunisian Cultural Monuments</title>
+    <style>
+        /* Your existing styles */
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f0f0f0;
+            color: #333;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+        }
+
+        header {
+            background-color: #004d40;
+            color: white;
+            text-align: center;
+            padding: 40px 0;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        h1 {
+            font-size: 2.5em;
+            margin: 0;
+            font-family: 'Verdana', sans-serif;
+        }
+
+        /* Search Bar Styles */
+        .search-bar-container {
+            text-align: center;
+            margin: 20px auto;
+        }
+
+        .search-bar {
+            width: 80%;
+            max-width: 600px;
+            padding: 10px;
+            font-size: 16px;
+            border: 2px solid #00796b;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Dropdown for Location */
+        .location-dropdown {
+    width: 80%;
+    max-width: 600px;
+    padding: 10px;
+    font-size: 16px;
+    border: 2px solid #00796b;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    margin: 10px auto; /* Centrage horizontal */
+    display: block; /* Nécessaire pour le centrage */
+}
+
+
+        /* Monument List Section */
+        .monument-list {
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 20px;
+        }
+
+        .monument-item {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+            position: relative;
+            transition: transform 0.3s ease;
+        }
+
+        .monument-item:hover {
+            transform: scale(1.02);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .monument-item h2 {
+            color: #00796b;
+            margin: 0;
+            font-size: 24px;
+            font-family: 'Verdana', sans-serif;
+        }
+
+        .monument-item .place {
+            font-weight: bold;
+            color: #555;
+            margin: 10px 0;
+        }
+
+        .monument-item .region {
+            font-style: italic;
+            color: #555;
+            margin: 5px 0;
+        }
+
+        .monument-item .toggle-arrow {
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            font-size: 20px;
+            cursor: pointer;
+            color: #00796b;
+        }
+
+        .monument-item .details {
+            display: none;
+            margin-top: 10px;
+        }
+
+        .monument-item img {
+            width: 100%;
+            height: auto;
+            border-radius: 8px;
+            margin-top: 10px;
+        }
+
+        /* Suggestion Styles */
+        .suggestion-form {
+            margin-top: 20px;
+            background-color: #f9f9f9;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .suggestion-form h3 {
+            margin-bottom: 10px;
+            color: #00796b;
+        }
+
+        .suggestion-form input,
+        .suggestion-form textarea {
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0;
+            font-size: 14px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        .suggestion-form button {
+            background-color: #00796b;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .suggestion-form button:hover {
+            background-color: #004d40;
+        }
+
+        .suggestion-list {
+            margin-top: 20px;
+            padding: 10px;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .suggestion-item {
+            margin-bottom: 15px;
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .suggestion-item:last-child {
+            border-bottom: none;
+        }
+
+        .footer {
+            background-color: #004d40;
+            color: white;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .footer a {
+            color: #00bfae;
+            text-decoration: none;
+            font-weight: bold;
+        }
+    </style>
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <!-- Leaflet Omnivore Plugin for KML support -->
+    <script src="https://unpkg.com/leaflet-omnivore@0.4.0/leaflet-omnivore.min.js"></script>
+    <script>
+        let monuments = [];
+
+        // Fetch and display monuments
+        async function fetchMonuments() {
+            const response = await fetch("crud.php");
+            monuments = await response.json();
+            displayMonuments(monuments);
+            populateLocationDropdown();
+        }
+
+        // Populate the location dropdown
+        async function populateLocationDropdown() {
+            const locations = [...new Set(monuments.map(monument => monument.location))];
+            const dropdown = document.getElementById("location-dropdown");
+            locations.forEach(location => {
+                const option = document.createElement("option");
+                option.value = location;
+                option.textContent = location;
+                dropdown.appendChild(option);
+            });
+        }
+
+        function displayMonuments(monuments) {
+            const list = document.getElementById("monument-list");
+            list.innerHTML = "";
+            monuments.forEach(monument => {
+                const item = document.createElement("div");
+                item.classList.add("monument-item");
+                item.innerHTML = `
+                    <h2>${monument.title}</h2>
+                    <p class="place"><strong>Location:</strong> ${monument.location}</p>
+                    <p class="region"><strong>Region:</strong> ${monument.region}</p> <!-- Added Region -->
+                    <span class="toggle-arrow" onclick="toggleDetails(this)">►</span>
+                    <div class="details">
+                        <p><strong>Description:</strong> ${monument.description}</p>
+                        <img src="uploaded_img/${monument.image}" alt="${monument.title}">
+                        <div class="suggestion-form">
+                            <h3>Add Suggestion</h3>
+                            <input type="text" placeholder="Your Name" id="name-${monument.id}">
+                            <textarea placeholder="Your Suggestion" id="suggestion-${monument.id}"></textarea>
+                            <input type="file" id="image-${monument.id}">
+                            <button onclick="addSuggestion(${monument.id})">Submit</button>
+                        </div>
+                        <div class="suggestion-list" id="suggestions-${monument.id}"></div>
+                    </div>
+                `;
+                list.appendChild(item);
+            });
+        }
+
+        async function addSuggestion(monumentId) {
+            const name = document.getElementById(`name-${monumentId}`).value;
+            const suggestion = document.getElementById(`suggestion-${monumentId}`).value;
+            const imageInput = document.getElementById(`image-${monumentId}`);
+            const formData = new FormData();
+
+            formData.append("action", "addSuggestion");
+            formData.append("monumentId", monumentId);
+            formData.append("name", name);
+            formData.append("suggestion", suggestion);
+            formData.append("image", imageInput.files[0]);
+
+            const response = await fetch("crud.php", {
+                method: "POST",
+                body: formData,
+            });
+
+            if (response.ok) {
+                alert("Suggestion added successfully!");
+                fetchMonuments();
+            } else {
+                alert("Error adding suggestion.");
+            }
+        }
+
+        // Filter monuments based on search input and selected location
+        function searchMonuments() {
+            const searchText = document.getElementById("search-bar").value.toLowerCase();
+            const selectedLocation = document.getElementById("location-dropdown").value;
+
+            // Filter monuments based on search text and selected location
+            const filteredMonuments = monuments.filter(monument => {
+                const matchesSearchText = monument.title.toLowerCase().includes(searchText);
+                const matchesLocation = selectedLocation ? monument.location === selectedLocation : true;
+                return matchesSearchText && matchesLocation;
+            });
+
+            // Display the filtered monuments
+            displayMonuments(filteredMonuments);
+        }
+
+        function toggleDetails(toggle) {
+            const details = toggle.parentElement.querySelector(".details");
+            const isVisible = details.style.display === "block";
+            details.style.display = isVisible ? "none" : "block";
+            toggle.textContent = isVisible ? "►" : "▼";
+        }
+
+        window.onload = fetchMonuments;
+    </script>
+</head>
+<body>
+    <header>
+        <h1>Tunisian Cultural Monuments</h1>
+    </header>
+
+    <div class="qr-code-container" style="text-align: center; margin: 20px;">
+        <h2>Scan to Learn More</h2>
+        <img src="google_maps_qr.png" alt="QR Code" style="width: 200px; height: 200px; border: 2px solid #ccc; border-radius: 10px;">
+        
+    </div>
+    <div style="text-align: center;">
+        <a href="https://www.google.com/maps/d/u/0/edit?mid=1EMZFmvMPMnbJx-Dcw2yT0GYLT0-bORE&ll=36.047236691908665%2C11.764442984758723&z=7">Visit Example</a>
+      </div>
+      
+
+    <div class="search-bar-container">
+        <input
+            type="text"
+            id="search-bar"
+            class="search-bar"
+            placeholder="Search for monuments..."
+            oninput="searchMonuments()"
+        />
+    </div>
+
+    <div class="location-dropdown-container">
+        <select id="location-dropdown" class="location-dropdown" onchange="searchMonuments()">
+            <option value="">Select a Location</option>
+        </select>
+    </div>
+
+    <!-- Map Container -->
+    <div id="map"></div>  <!-- This is where the map will be displayed -->
+
+
+    <div class="monument-list" id="monument-list">
+        <!-- Monuments will be displayed here -->
+    </div>
+
+    <div class="footer">
+        <p>&copy; 2024 Tunisian Cultural Monuments. All rights reserved.</p>
+    </div>
+
+    <!-- Leaflet Map Script -->
+    <script>
+        // Create the map, centered on Tunisia (default center) or your preferred location
+        var map = L.map('map').setView([33.8869, 9.5375], 6);  // Tunisia center coordinates
+
+        // Add OpenStreetMap tile layer
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+
+        // Load the KML file (make sure the path is correct to your KML file)
+        var kmlLayer = omnivore.kml('http://localhost/tunisian_culture/map.kml').addTo(map);
+    </script>
+
+
+    
+</body>
+<script> window.chtlConfig = { chatbotId: "5757386341" } </script>
+<script async data-id="5757386341" id="chatling-embed-script" type="text/javascript" src="https://chatling.ai/js/embed.js"></script>
+</html>

@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monuments Management</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&family=Montserrat:wght@500&display=swap" rel="stylesheet">
+    <style>
+        /* Global Styles */
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f4f7fa;
+            margin: 0;
+            padding: 0;
+            color: #333;
+        }
+        h1 {
+            text-align: center;
+            margin-top: 50px;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 2.5em;
+            color: #3e8e41;
+        }
+
+        /* Container for the page */
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-around;
+            padding: 0 20px;
+            margin-top: 30px;
+        }
+
+        /* Form Container */
+        .form-container {
+            background-color: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            width: 45%;
+            margin-top: 40px;
+            transition: transform 0.3s ease-in-out;
+        }
+        .form-container:hover {
+            transform: translateY(-10px);
+        }
+        .form-container h2 {
+            text-align: center;
+            font-size: 24px;
+            color: #4CAF50;
+            margin-bottom: 25px;
+        }
+
+        input, textarea {
+            width: 100%;
+            padding: 14px;
+            margin: 12px 0;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+        input:focus, textarea:focus {
+            border-color: #4CAF50;
+            outline: none;
+        }
+
+        button {
+            width: 100%;
+            padding: 15px;
+            background-color: #4CAF50;
+            border: none;
+            border-radius: 8px;
+            font-size: 18px;
+            color: white;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+
+        /* Monument List Container */
+        .monument-list-container {
+            width: 45%;
+            margin-top: 40px;
+        }
+
+        /* Monument Card */
+        .monument-card {
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            margin: 20px 0;
+            padding: 20px;
+            transition: transform 0.3s ease;
+        }
+        .monument-card:hover {
+            transform: translateY(-10px);
+        }
+        .monument-card h3 {
+            margin: 0;
+            font-size: 1.8em;
+            color: #333;
+        }
+        .monument-card p {
+            font-size: 1.2em;
+            color: #555;
+        }
+        .monument-card img {
+            width: 100%;
+            height: auto;
+            border-radius: 8px;
+            margin-top: 15px;
+        }
+
+        /* Suggestion List */
+        .suggestions {
+            margin-top: 20px;
+            background-color: #f8f8f8;
+            padding: 15px;
+            border-radius: 8px;
+        }
+        .suggestions h4 {
+            font-size: 1.5em;
+            color: #4CAF50;
+        }
+
+        /* Search Input */
+        .search-input {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            border: 2px solid #ddd;
+            font-size: 16px;
+        }
+
+        /* Buttons for Actions */
+        .btn-container {
+            text-align: center;
+        }
+        .btn-container button {
+            padding: 10px 20px;
+            background-color: #008CBA;
+            border: none;
+            border-radius: 6px;
+            margin: 0 10px;
+            color: white;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        .btn-container button:nth-child(2) {
+            background-color: #f44336;
+        }
+        .btn-container button:hover {
+            background-color: #4CAF50;
+        }
+
+        /* Statistics Display */
+        .stats-container {
+            display: flex;
+            justify-content: space-around;
+            margin: 30px 0;
+        }
+        .stat-box {
+            background-color: #ffffff;
+            padding: 30px;
+            width: 250px;
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+        .stat-box h2 {
+            font-size: 1.5em;
+            color: #4CAF50;
+            margin-bottom: 10px;
+        }
+        .stat-box p {
+            font-size: 2.5em;
+            color: #333;
+        }
+
+        /* Media Queries for Responsiveness */
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+                align-items: center;
+            }
+            .form-container, .monument-list-container {
+                width: 90%;
+            }
+        }
+
+    </style>
+    <script>
+        let currentMonumentId = null;
+
+        async function fetchMonuments() {
+            const response = await fetch("crud.php");
+            const monuments = await response.json();
+            const list = document.getElementById("monument-list");
+            list.innerHTML = "";
+
+            for (const monument of monuments) {
+                const suggestions = await fetchSuggestions(monument.id);
+                const item = document.createElement("div");
+                item.classList.add("monument-card");
+
+                const suggestionsList = suggestions.map(suggestion => `
+                    <li>
+                        <p><strong>Name:</strong> ${suggestion.name}</p>
+                        <p><strong>Suggestion:</strong> ${suggestion.suggestion}</p>
+                        ${suggestion.image ? `<img src="uploaded_img/${suggestion.image}" alt="Suggestion Image" style="width: 100px; height: auto; border-radius: 8px;">` : ''}
+                        <button onclick="deleteSuggestion(${suggestion.id})">Delete Suggestion</button>
+                    </li>
+                `).join("");
+
+                item.innerHTML = `
+                    <h3>${monument.title}</h3>
+                    <p><strong>Location:</strong> ${monument.location}</p>
+                    <p><strong>Description:</strong> ${monument.description}</p>
+                    <p><strong>Region:</strong> ${monument.region}</p>
+                    <img src="uploaded_img/${monument.image}" alt="${monument.title}">
+                    <div class="btn-container">
+                        <button onclick="editMonument(${monument.id}, '${monument.title}', '${monument.location}', '${monument.description}', '${monument.image}', '${monument.region}')">Edit</button>
+                        <button onclick="deleteMonument(${monument.id})">Delete</button>
+                    </div>
+                    <div class="suggestions">
+                        <h4>Suggested Monuments:</h4>
+                        <input type="text" id="suggestion-search" class="search-input" placeholder="Search suggestions..." oninput="searchSuggestions(${monument.id})">
+                        <ul id="suggestion-list-${monument.id}">
+                            ${suggestionsList}
+                        </ul>
+                    </div>
+                `;
+                list.appendChild(item);
+            }
+        }
+
+        async function fetchSuggestions(monumentId) {
+            const response = await fetch(`crud.php?monumentId=${monumentId}`);
+            const suggestions = await response.json();
+            return suggestions;
+        }
+
+        function searchSuggestions(monumentId) {
+    const searchTerm = document.getElementById('suggestion-search').value.toLowerCase();
+    const suggestionsList = document.getElementById(`suggestion-list-${monumentId}`);
+    const suggestions = suggestionsList.getElementsByTagName('li');
+
+    // Loop through each suggestion item
+    for (let i = 0; i < suggestions.length; i++) {
+        const suggestion = suggestions[i];
+
+        // Access the 'Name' text using the correct structure
+        const nameElement = suggestion.querySelector('p strong');  // Finds the <strong> tag in each list item
+        if (nameElement) {
+            // The nextSibling should be the text node that contains the name
+            const nameText = nameElement.nextSibling.textContent.toLowerCase().trim();
+
+            // Check if the suggestion name contains the search term
+            if (nameText.includes(searchTerm)) {
+                suggestion.style.display = '';  // Show the suggestion if it matches
+            } else {
+                suggestion.style.display = 'none';  // Hide the suggestion if it doesn't match
+            }
+        }
+    }
+}
+
+
+        async function addMonument() {
+            const title = document.getElementById("title").value;
+            const location = document.getElementById("location").value;
+            const description = document.getElementById("description").value;
+            const image = document.getElementById("image").files[0];
+            const region = document.getElementById("region").value;
+
+            if (!title || !location || !description || !image || !region) {
+                alert("All fields are required!");
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('title', title);
+            formData.append('location', location);
+            formData.append('description', description);
+            formData.append('image', image);
+            formData.append('region', region);
+
+            const response = await fetch("crud.php", {
+                method: "POST",
+                body: formData
+            });
+
+            const result = await response.json();
+            alert(result.message || result.error);
+            fetchMonuments();
+            resetForm();
+        }
+
+        async function editMonument(id, title, location, description, image, region) {
+            currentMonumentId = id;
+            document.getElementById("title").value = title;
+            document.getElementById("location").value = location;
+            document.getElementById("description").value = description;
+            document.getElementById("image-preview").src = "uploaded_img/" + image;
+            document.getElementById("region").value = region;
+            document.getElementById("submit-btn").textContent = "Update Monument";
+        }
+
+        async function updateMonument() {
+            const title = document.getElementById("title").value;
+            const location = document.getElementById("location").value;
+            const description = document.getElementById("description").value;
+            const image = document.getElementById("image").files[0];
+            const region = document.getElementById("region").value;
+
+            if (!title || !location || !description || !region) {
+                alert("All fields except image are required!");
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('title', title);
+            formData.append('location', location);
+            formData.append('description', description);
+            if (image) {
+                formData.append('image', image);
+            }
+            formData.append('region', region);
+            formData.append('_method', 'PUT');
+            formData.append('id', currentMonumentId);
+
+            const response = await fetch("crud.php", {
+                method: "POST",
+                body: formData
+            });
+
+            const result = await response.json();
+            alert(result.message || result.error);
+            fetchMonuments();
+            resetForm();
+        }
+
+        async function deleteMonument(id) {
+            if (confirm("Are you sure you want to delete this monument?")) {
+                const response = await fetch(`crud.php?id=${id}`, {
+                    method: "DELETE"
+                });
+
+                const result = await response.json();
+                alert(result.message || result.error);
+                fetchMonuments();
+            }
+        }
+
+        async function deleteSuggestion(suggestionId) {
+            if (confirm("Are you sure you want to delete this suggestion?")) {
+                const response = await fetch(`crud.php?suggestionId=${suggestionId}`, {
+                    method: "DELETE"
+                });
+
+                const result = await response.json();
+                alert(result.message || result.error);
+                fetchMonuments();
+            }
+        }
+
+        function resetForm() {
+            document.getElementById("title").value = '';
+            document.getElementById("location").value = '';
+            document.getElementById("description").value = '';
+            document.getElementById("image").value = '';
+            document.getElementById("region").value = '';
+            document.getElementById("submit-btn").textContent = "Add Monument";
+            currentMonumentId = null;
+        }
+
+        async function fetchStatistics() {
+            const response = await fetch('crud.php?action=statistics');
+            const data = await response.json();
+            document.getElementById('total-monuments').textContent = data.totalMonuments;
+            document.getElementById('total-suggestions').textContent = data.totalSuggestions;
+        }
+
+        window.onload = function() {
+            fetchMonuments();
+            fetchStatistics();
+        }
+    </script>
+</head>
+<body>
+    <div class="stats-container">
+        <div class="stat-box">
+            <h2>Total Monuments</h2>
+            <p id="total-monuments">Loading...</p>
+        </div>
+        <div class="stat-box">
+            <h2>Total Suggestions</h2>
+            <p id="total-suggestions">Loading...</p>
+        </div>
+    </div>
+
+    <h1>Monuments Management</h1>
+    <div class="container">
+        <div class="form-container">
+            <h2>Manage Monuments</h2>
+            <form onsubmit="event.preventDefault(); currentMonumentId ? updateMonument() : addMonument();">
+                <input type="text" id="title" placeholder="Monument Title" required>
+                <input type="text" id="location" placeholder="Monument Location" required>
+                <textarea id="description" placeholder="Description" required></textarea>
+                <input type="file" id="image" accept="image/*">
+                <input type="text" id="region" placeholder="Region" required>
+                <button type="submit" id="submit-btn">Add Monument</button>
+            </form>
+        </div>
+        <div class="monument-list-container">
+            <div id="monument-list"></div>
+        </div>
+    </div>
+</body>
+</html>

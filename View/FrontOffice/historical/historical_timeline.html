@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive History Timeline</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <style>
+        * { margin: 0; padding: 0; }
+        body { background: #7e6a33; }
+
+        #container {
+            height: 600px;
+            width: 100%;
+            background-color: #5a4305;
+            overflow: hidden;
+            position: relative;
+            margin-top: 30px;
+            display: inline-block;
+        }
+
+        #thumbs {
+            background-color: #5a4305;
+            position: absolute;
+            top: 0px;
+            left: 0px;
+            height: 100%;
+            width: auto;
+            overflow: hidden;
+            white-space: nowrap;
+            padding: 30px 100px;
+        }
+
+        .history-block {
+            height: 100%;
+            width: 300px;
+            background-color: #cdcdcd;
+            margin: 0 -2px;
+            border-right: 1px solid #fff;
+            display: inline-block;
+            font-family: 'roboto condensed', sans-serif;
+            font-size: 60px;
+            font-weight: 100;
+            color: #FFF;
+            cursor: pointer;
+            box-shadow: 2px 5px 20px rgba(0,0,0,0.8);
+            transition: width 0.2s;
+        }
+
+        .history-block:last-of-type { border-right: none; }
+
+        .cover {
+            width: 100%;
+            height: 100%;
+            transition: background .5s;
+            background: rgba(0,0,0,0.8);
+        }
+
+        .cover:hover {
+            background: rgba(0,0,0,0.8);
+        }
+
+        .year {
+            position: absolute;
+            top: 0px;
+            font-size: 30px;
+            font-weight: 500;
+            margin: 40px 30px;
+        }
+
+        .title {
+            position: absolute;
+            display: block;
+            width: 260px;
+            top: 60px;
+            font-size: 15px;
+            margin: 30px;
+            white-space: normal;
+            transition: width 0.2s;
+        }
+
+        .timeline {
+            display: none;
+            position: absolute;
+            bottom: 80px;
+            font-size: 20px;
+            margin: 20px;
+            transition: display 0.8s;
+        }
+
+        .timeline ul {
+            margin: 0;
+            padding: 0;
+            list-style-type: none;
+            text-align: center;
+        }
+
+        .timeline ul li {
+            display: inline;
+            font-size: 15px;
+            font-weight: 100;
+            padding: 0px 5px;
+        }
+
+        .timeline ul li:before {
+            font-family: FontAwesome;
+            font-style: normal;
+            font-weight: normal;
+            color: rgba(255,255,255,0.5);
+            content: '\f10c';
+            position: absolute;
+            top: 30px;
+            margin-left: 10px;
+            transition: all 0.5s;
+        }
+
+        .timeline ul li:after {
+            content: '';
+            position: absolute;
+            top: 40px;
+            margin-left: -10px;
+            width: 36px;
+            height: 2px;
+            border: 1px solid rgba(255,255,255,0.5);
+            transition: all 0.5s;
+        }
+
+        .timelineYear, .timelineYear:hover {
+            text-decoration: none;
+            color: #fff;
+            transition: all 0.8s;
+        }
+
+        .timeline ul li:hover:before {
+            content: '\f111';
+            color: #ffffff;
+            font-size: 18px;
+            transition: all 0.5s;
+            top: 29px;
+            margin-left: 9px;
+        }
+
+        .timeline ul li:hover:after {
+            content: '';
+            position: absolute;
+            top: 40px;
+            margin-left: -10px;
+            width: 36px;
+            height: 2px;
+            border: 1px solid #fff;
+            transition: all 0.5s;
+        }
+
+        .timeline ul li:hover .timelineYear {
+            position: static;
+            top: -10px;
+        }
+
+        .bg-800bc { background: url('images/CarthaginianEmpire.jpg'); background-size: cover; }
+        .bg-66 { background: url('images/french_protectorate.jpg'); background-size: cover; }
+        .bg-76 { background: url('images/independence_day.jpg'); background-size: cover; }
+        .bg-2011 { background: url('images/jasmine_revolution.jpg'); background-size: cover; }
+        
+        
+    </style>
+</head>
+<body>
+    <div id="container">
+        <div id="thumbs">
+            <div class="history-block bg-800bc">
+                <div class="cover"></div>
+                <div class="year">800BC - 100BC</div>
+                <div class="title">Carthage was an ancient city in Northern Africa, on the eastern side of the Lake of Tunis in what is now Tunisia. Carthage was one of the most important trading hubs of the Ancient Mediterranean and one of the most affluent cities of the classical world.</div>
+                <div class="timeline">
+                    <ul>
+                        <li><a href="" class="timelineYear">800BC</a></li>
+                        <li><a href="" class="timelineYear">700BC</a></li>
+                        <li><a href="" class="timelineYear">400BC</a></li>
+                        <li><a href="" class="timelineYear">300BC</a></li>
+                        <li><a href="" class="timelineYear">100BC</a></li>
+                        
+                    </ul>
+                </div>
+            </div>
+            <div class="history-block bg-66">
+                <div class="cover"></div>
+                <div class="year">1881 - 1956</div>
+                <div class="title">Tunisia became a French protectorate, leading to major changes in administration, economy, and culture under French influence.</div>
+                <div class="timeline">
+                    <ul>
+                        <li><a href="" class="timelineYear">1881</a></li>
+                        <li><a href="" class="timelineYear">1883</a></li>
+                        <li><a href="" class="timelineYear">1920</a></li>
+                        <li><a href="" class="timelineYear">1922</a></li>
+                        <li><a href="" class="timelineYear">1934 </a></li>
+                        <li><a href="" class="timelineYear">1943 </a></li>
+                        <li><a href="" class="timelineYear">1955</a></li>
+                        
+                    </ul>
+                </div>
+            </div>
+            <div class="history-block bg-76">
+                <div class="cover"></div>
+                <div class="year">1956 - 1986</div>
+                <div class="title">Tunisia gained independence from France on March 20, 1956, with Habib Bourguiba becoming the first Prime Minister and later the President of the Republic of Tunisia.</div>
+                <div class="timeline">
+                    <ul>
+                        <li><a href="" class="timelineYear">1956 </a></li>
+                        <li><a href="" class="timelineYear">1964</a></li>
+                        <li><a href="" class="timelineYear">1977 </a></li>
+                        <li><a href="" class="timelineYear">1982</a></li>
+                        <li><a href="" class="timelineYear">1987</a></li>
+                        <li><a href="" class="timelineYear">2009</a></li>
+                        
+                    </ul>
+                </div>
+            </div>
+            <!-- Add more history blocks here as needed -->
+            <div class="history-block bg-2011">
+                <div class="cover"> </div>
+                <div class="year">2011 - 2015</div>
+                <div class="title">The revolution in Tunisia sparked the Arab Spring, leading to the ousting of Ben Ali and initiating democratic reforms across the region.</div>
+                <div class="timeline">
+                    <ul>
+                        <li><a href="" class="timelineYear">2011</a></li>
+                        <li><a href="" class="timelineYear">2012</a></li>
+                        <li><a href="" class="timelineYear">2013</a></li>
+                        <li><a href="" class="timelineYear">2014</a></li>
+                        <li><a href="" class="timelineYear">2015</a></li>
+                        
+                    </ul>
+                </div>
+            </div>
+            
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        var width = $(window).width();
+
+        $(document).ready(function () {
+            // On Hover: Show timeline
+            $(".history-block").mouseenter(function () {
+                $(this).children(".timeline").fadeIn(200);
+                $(this).find('.year').fadeOut(200);
+                $(this).animate({ width: "400px" }, 200);
+            }).mouseleave(function () {
+                $(this).children(".timeline").fadeOut(200);
+                $(this).find('.year').fadeIn(200);
+                $(this).animate({ width: "300px" }, 200);
+            });
+
+            // On Click: Show full timeline
+            $(".timelineYear").click(function () {
+                alert("Year clicked: " + $(this).text());
+            });
+        });
+    </script>
+</body>
+</html>
+
